@@ -1,9 +1,50 @@
 # 文件名: login_script.py
 import os
 import time
+import random
 import pyotp
+import requests
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth 
+
+def send_pushplus_notification(title, content, token=None):
+    """
+    发送 pushplus 通知
+    :param title: 通知标题
+    :param content: 通知内容
+    :param token: pushplus token (如果不提供，从环境变量 PUSHPLUS_TOKEN 读取)
+    :return: 是否发送成功
+    """
+    if not token:
+        token = os.environ.get("PUSHPLUS_TOKEN")
+    
+    if not token:
+        print("⚠️ 未配置 PUSHPLUS_TOKEN，跳过通知发送")
+        return False
+    
+    try:
+        url = "http://www.pushplus.plus/send"
+        data = {
+            "token": token,
+            "title": title,
+            "content": content,
+            "template": "html"
+        }
+        response = requests.post(url, json=data, timeout=10)
+        if response.status_code == 200:
+            result = response.json()
+            if result.get("code") == 0:
+                print(f"✅ pushplus 通知发送成功: {title}")
+                return True
+            else:
+                print(f"⚠️ pushplus 通知发送失败: {result.get('msg')}")
+                return False
+        else:
+            print(f"⚠️ pushplus 请求失败: HTTP {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ pushplus 通知发送异常: {e}")
+        return False
 
 def run_login():
     # 从环境变量读取配置信息
@@ -111,8 +152,16 @@ def run_login():
 
         if is_success:
             print("🎉🎉🎉 登录成功！")
+            send_pushplus_notification(
+                title="ClawCloud 自动登录成功 ✅",
+                content="<h3>🎉 ClawCloud 自动登录成功！</h3><p><strong>账号:</strong> " + username + "</p><p><strong>时间:</strong> " + time.strftime("%Y-%m-%d %H:%M:%S") + "</p><p>祝您使用愉快！</p>"
+            )
         else:
             print("😭😭😭 登录失败。请检查最新截图。")
+            send_pushplus_notification(
+                title="ClawCloud 自动登录失败 ❌",
+                content="<h3>❌ ClawCloud 自动登录失败！</h3><p><strong>账号:</strong> " + username + "</p><p><strong>时间:</strong> " + time.strftime("%Y-%m-%d %H:%M:%S") + "</p><p>请检查日志并手动处理。</p>"
+            )
             exit(1)
 
         browser.close()
