@@ -7,9 +7,9 @@ from playwright_stealth import Stealth
 
 def run_login():
     # 从环境变量读取配置信息
-    username = 'zcy2nn@qq.com'
-    password = 'zcy1024_gi'
-    totp_secret = 'HVMFUIADVT7HBZYX'
+    username = os.environ.get("GH_USERNAME")
+    password = os.environ.get("GH_PASSWORD")
+    totp_secret = os.environ.get("GH_2FA_SECRET")
 
     if not username or not password:
         print("❌ 错误: 未设置账号密码环境变量。")
