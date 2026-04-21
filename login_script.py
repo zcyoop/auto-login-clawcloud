@@ -1,7 +1,6 @@
 # 文件名: login_script.py
 import os
 import time
-import random
 import pyotp
 import requests
 from playwright.sync_api import sync_playwright

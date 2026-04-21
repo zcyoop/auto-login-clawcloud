@@ -27,7 +27,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install playwright pyotp playwright-stealth
+          pip install playwright pyotp playwright-stealth requests
           playwright install chromium
           # 【极其关键的新增代码】让 Playwright 自动把 Ubuntu 服务器缺失的图形界面底层依赖全装上！
           playwright install-deps chromium
